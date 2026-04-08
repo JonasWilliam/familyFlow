@@ -1,8 +1,12 @@
 import React from 'react';
+import { Wifi } from 'lucide-react';
 
 interface RealisticCardProps {
   banco: string;
   last4: string;
+  nome?: string;
+  limite?: number;
+  vencimento?: string | number;
 }
 
 const bankColors: Record<string, { bg: string, text: string }> = {
@@ -16,7 +20,7 @@ const bankColors: Record<string, { bg: string, text: string }> = {
   'Outros': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#ffffff' },
 };
 
-export const RealisticCard: React.FC<RealisticCardProps> = ({ banco, last4, nome, limite, vencimento }) => {
+export const RealisticCard: React.FC<RealisticCardProps> = ({ banco, last4, nome, vencimento }) => {
   const styles = bankColors[banco] || bankColors['Outros'];
 
   return (
@@ -89,7 +93,7 @@ export const RealisticCard: React.FC<RealisticCardProps> = ({ banco, last4, nome
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
         <div>
           <p style={{ fontSize: '0.625rem', textTransform: 'uppercase', opacity: 0.7, marginBottom: '2px' }}>Titular</p>
-          <p style={{ fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase' }}>{nome}</p>
+          <p style={{ fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase' }}>{nome || 'FULANO DE TAL'}</p>
         </div>
         
         <div style={{ textAlign: 'right' }}>
