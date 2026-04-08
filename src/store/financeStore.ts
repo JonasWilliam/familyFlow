@@ -296,7 +296,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     set(state => ({ cards: [...state.cards, newCard] }));
   },
   updateCard: async (id, payload) => {
-    const updated = await ApiService.updateCard(id, payload);
+    await ApiService.updateCard(id, payload);
     const { user } = get();
     if (user) {
       const cards = await ApiService.getCards(user.id);
