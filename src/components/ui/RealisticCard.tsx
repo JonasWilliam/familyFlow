@@ -1,12 +1,8 @@
 import React from 'react';
-import { Wifi, CreditCard } from 'lucide-react';
 
 interface RealisticCardProps {
   banco: string;
   last4: string;
-  nome: string;
-  limite?: number;
-  vencimento?: number;
 }
 
 const bankColors: Record<string, { bg: string, text: string }> = {

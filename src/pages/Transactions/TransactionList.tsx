@@ -6,9 +6,9 @@ import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
 import {
-  Receipt, Plus, Pencil, Trash2, ArrowUpRight, ArrowDownRight,
+  Receipt, Plus, Pencil, Trash2,
   FileText, DollarSign, Calendar, Search, 
-  ChevronLeft, ChevronRight, CreditCard,
+  ChevronLeft, ChevronRight,
   ArrowDownAZ, ArrowUpAZ
 } from 'lucide-react';
 
@@ -49,7 +49,6 @@ export const TransactionList = () => {
   // Estados de Deleção
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -166,20 +165,18 @@ export const TransactionList = () => {
 
   const confirmDelete = (id: string) => {
     setDeleteTargetId(id);
-    setDeleteError('');
     setDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
     setDeleting(true);
-    setDeleteError('');
     try {
       await deleteTransaction(deleteTargetId);
       setDeleteModalOpen(false);
       setDeleteTargetId(null);
     } catch (err: unknown) {
-      setDeleteError(err instanceof Error ? err.message : 'Erro ao excluir');
+      console.error(err);
     } finally {
       setDeleting(false);
     }

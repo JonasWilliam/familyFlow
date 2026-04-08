@@ -4,7 +4,7 @@ import {
   PartyPopper, GraduationCap, Home, CreditCard, 
   Wallet, DollarSign, Gift, TrendingUp, Settings,
   Plane, ShoppingCart, Coffee, Dumbbell, Zap,
-  Briefcase, Ghost // Ghost as fallback
+  Briefcase
 } from 'lucide-react';
 
 interface CategoryIconProps {

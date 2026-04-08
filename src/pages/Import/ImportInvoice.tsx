@@ -4,7 +4,7 @@ import { ApiService } from '../../services/apiService';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import {
-  Upload, FileImage, Sparkles, Trash2, Check, AlertCircle, ArrowDownRight, ArrowUpRight, X
+  Upload, FileImage, Sparkles, Trash2, Check, AlertCircle, ArrowDownRight, ArrowUpRight
 } from 'lucide-react';
 
 interface ParsedItem {
@@ -16,7 +16,7 @@ interface ParsedItem {
 }
 
 export const ImportInvoice = () => {
-  const { members, categories, loadMembers, loadCategories, addTransaction } = useFinanceStore();
+  const { user, members, categories, loadMembers, loadCategories, addTransaction } = useFinanceStore();
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -137,6 +137,7 @@ export const ImportInvoice = () => {
           tipo: item.tipo as 'gasto' | 'receita',
           categoriaId,
           membroId,
+          usuarioId: user?.id || '',
         });
         count++;
       } catch (err) {

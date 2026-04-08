@@ -4,9 +4,8 @@ import { useFinanceStore } from '../../store/financeStore';
 import { Card } from '../../components/ui/Card';
 import { CategoryIcon } from '../../components/ui/CategoryIcon';
 import { 
-  TrendingUp, TrendingDown, Wallet, CreditCard, 
-  ArrowUpRight, ArrowDownRight, ChevronRight, 
-  Coins, Plus, ChevronDown, ChevronUp, Receipt, PieChart
+  CreditCard, ArrowUpRight, ArrowDownRight, 
+  ChevronDown, ChevronUp, Receipt, PieChart
 } from 'lucide-react';
 
 export const Dashboard = () => {

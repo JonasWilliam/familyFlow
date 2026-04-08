@@ -9,7 +9,7 @@ import {
   Plus, Pencil, Trash2, 
   Settings, Zap,
   Calendar, CreditCard as CardIcon,
-  ShieldCheck, Landmark
+  ShieldCheck
 } from 'lucide-react';
 
 import { maskCurrency, parseCurrencyBRL, formatCurrencyBRL } from '../../utils/formatters';

@@ -6,17 +6,17 @@ import { Input } from '../../components/ui/Input';
 import { Calendar, Save, CheckCircle2, Info } from 'lucide-react';
 
 export const Settings = () => {
-  const { settings, updateSetting } = useFinanceStore();
-  const [startDay, setStartDay] = useState(settings.startDay || '10');
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setSuccess(false);
-    try {
-      await updateSetting('startDay', startDay);
+    const { settings, updateStartDay } = useFinanceStore();
+    const [startDay, setStartDay] = useState(settings.startDay || '10');
+    const [saving, setSaving] = useState(false);
+    const [success, setSuccess] = useState(false);
+  
+    const handleSave = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setSaving(true);
+      setSuccess(false);
+      try {
+        await updateStartDay(startDay);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (e) {
