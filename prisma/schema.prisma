@@ -1,0 +1,108 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String    @id @default(uuid())
+  nome                 String
+  email                String    @unique
+  senha                String
+  emailVerified        DateTime?
+  verificationToken    String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  members      Member[]
+  cards        Card[]
+  transactions Transaction[]
+  investments  Investment[]
+
+  @@map("usuarios")
+}
+
+model Member {
+  id        String @id @default(uuid())
+  nome      String
+  usuarioId String
+  user      User   @relation(fields: [usuarioId], references: [id])
+
+  transactions Transaction[]
+
+  @@map("membros")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  nome String
+  tipo String // "gasto" | "receita"
+
+  transactions Transaction[]
+
+  @@map("categorias")
+}
+
+model Card {
+  id          String @id @default(uuid())
+  nome        String
+  limite      Float
+  fechamento  Int
+  vencimento  Int
+  banco       String @default("Outros")
+  last4       String @default("0000")
+  usuarioId   String
+  user        User   @relation(fields: [usuarioId], references: [id])
+
+  transactions Transaction[]
+
+  @@map("cartoes")
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  descricao        String
+  valor            Float
+  data             String
+  categoriaId      String
+  membroId         String
+  usuarioId        String
+  tipo             String // "gasto" | "receita"
+  metodoPagamento  String   @default("dinheiro")
+  cartaoId         String?
+  parcelaAtual     Int?
+  parcelasTotais   Int?
+  createdAt        DateTime @default(now())
+
+  category Category @relation(fields: [categoriaId], references: [id])
+  member   Member   @relation(fields: [membroId], references: [id])
+  user     User     @relation(fields: [usuarioId], references: [id])
+  card     Card?    @relation(fields: [cartaoId], references: [id])
+
+  @@map("transacoes")
+}
+
+model Setting {
+  key   String @id
+  value String
+
+  @@map("configuracoes")
+}
+
+model Investment {
+  id        String @id @default(uuid())
+  descricao String
+  valor     Float
+  tipo      String
+  usuarioId String
+  meta      Float?
+  user      User   @relation(fields: [usuarioId], references: [id])
+
+  @@map("investimentos")
+}
