@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { TransactionController } from '../controllers/TransactionController';
+import { TransactionController } from '../controllers/TransactionController.js';
 
 const transactionRoutes = Router();
 const c = new TransactionController();

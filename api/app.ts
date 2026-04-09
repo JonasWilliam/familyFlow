@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import authRoutes from './routes/auth.routes';
-import transactionRoutes from './routes/transaction.routes';
-import memberRoutes from './routes/member.routes';
-import categoryRoutes from './routes/category.routes';
-import invoiceRoutes from './routes/invoice.routes';
-import settingRoutes from './routes/setting.routes';
-import investmentRoutes from './routes/investment.routes';
-import cardRoutes from './routes/card.routes';
+import authRoutes from './routes/auth.routes.js';
+import transactionRoutes from './routes/transaction.routes.js';
+import memberRoutes from './routes/member.routes.js';
+import categoryRoutes from './routes/category.routes.js';
+import invoiceRoutes from './routes/invoice.routes.js';
+import settingRoutes from './routes/setting.routes.js';
+import investmentRoutes from './routes/investment.routes.js';
+import cardRoutes from './routes/card.routes.js';
 
 const app = express();
 

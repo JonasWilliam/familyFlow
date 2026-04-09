@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../lib/prisma.js';
 
 export class CategoryController {
   public async list(_req: Request, res: Response): Promise<void> {
