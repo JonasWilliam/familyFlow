@@ -30,4 +30,5 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/cards', cardRoutes);
 
+export default app;
 export { app };
