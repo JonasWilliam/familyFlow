@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma.js';
@@ -68,7 +68,7 @@ export class AuthController {
       }
 
       const hashedPassword = await bcrypt.hash(senha, 10);
-      const verificationToken = uuidv4();
+      const verificationToken = crypto.randomUUID();
 
       // Start transaction to create User and its first Member
       const newUser = await prisma.$transaction(async (tx) => {
