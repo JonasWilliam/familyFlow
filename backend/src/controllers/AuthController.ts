@@ -38,8 +38,12 @@ export class AuthController {
         message: 'Login realizado com sucesso', 
         user: userWithoutPassword 
       });
-    } catch (err) {
-      console.error('Login error:', err);
+    } catch (err: any) {
+      console.error('SERVER_ERROR (Login):', {
+        message: err.message,
+        stack: err.stack,
+        code: err.code
+      });
       res.status(500).json({ error: 'Erro de servidor ao tentar realizar login' });
     }
   }
@@ -95,9 +99,13 @@ export class AuthController {
         message: 'Usuário registrado com sucesso!', 
         user: userWithoutPassword 
       });
-    } catch (err) {
-      console.error('Registration error:', err);
-      res.status(500).json({ error: 'Erro ao registrar usuário.' });
+    } catch (err: any) {
+      console.error('SERVER_ERROR (Register):', {
+        message: err.message,
+        stack: err.stack,
+        code: err.code
+      });
+      res.status(500).json({ error: 'Erro ao registrar usuário (Produção).' });
     }
   }
 }
