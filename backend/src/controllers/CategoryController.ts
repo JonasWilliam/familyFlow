@@ -24,9 +24,9 @@ export class CategoryController {
         data: { nome, tipo }
       });
       res.status(201).json(category);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Create category error:', err);
-      res.status(500).json({ error: 'Erro ao criar categoria' });
+      res.status(500).json({ error: 'Erro ao criar categoria', details: err.message });
     }
   }
 
