@@ -204,6 +204,20 @@ export class AuthController {
         });
       }
 
+      // Self-healing: Ensure user has at least one Member record with their name
+      const existingMember = await prisma.member.findFirst({
+        where: { usuarioId }
+      });
+
+      if (!existingMember) {
+        await prisma.member.create({
+          data: {
+            nome: user.nome.split(' ')[0], // Use first name as default member name
+            usuarioId: user.id
+          }
+        });
+      }
+
       const { senha: _, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword });
     } catch (error) {

@@ -9,9 +9,17 @@ export class TransactionController {
       metodoPagamento, cartaoId, parcelaAtual, parcelasTotais 
     } = req.body;
     
-    if (!descricao || valor === undefined || !data || !categoriaId || !membroId || !usuarioId || usuarioId === 'null' || usuarioId === 'undefined' || !tipo) {
-      console.warn('Invalid or missing fields:', { descricao, valor, data, categoriaId, membroId, usuarioId, tipo });
-      res.status(400).json({ error: 'Todos os campos obrigatórios, incluindo o usuário, devem ser preenchidos' });
+    const requiredFields = { descricao, valor, data, categoriaId, membroId, usuarioId, tipo };
+    const missing = Object.entries(requiredFields)
+      .filter(([_, v]) => v === undefined || v === null || v === '' || v === 'null' || v === 'undefined')
+      .map(([k]) => k);
+
+    if (missing.length > 0) {
+      console.warn('Missing or invalid fields in transaction:', missing);
+      res.status(400).json({ 
+        error: `Campos obrigatórios ausentes ou inválidos: ${missing.join(', ')}`,
+        missing 
+      });
       return;
     }
 
