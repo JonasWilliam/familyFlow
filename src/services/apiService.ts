@@ -30,7 +30,7 @@ export const ApiService = {
   getTransactions: (usuarioId: string) =>
     request<Transaction[]>(`${API_URL}/transactions/${usuarioId}`),
 
-  createTransaction: (tx: Omit<Transaction, 'id'> & { usuarioId: string }) =>
+  createTransaction: (tx: Omit<Transaction, 'id' | 'createdAt'> & { usuarioId: string }) =>
     request<{ transaction: Transaction }>(`${API_URL}/transactions`, {
       method: 'POST', body: JSON.stringify(tx),
     }).then(d => d.transaction),

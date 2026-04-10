@@ -100,8 +100,8 @@ export const TransactionList = () => {
       }
 
       // Se for o mesmo dia, usa o horário de inserção (createdAt)
-      const timeA = new Date(a.createdAt).getTime();
-      const timeB = new Date(b.createdAt).getTime();
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
   }, [transactions, filterPeriod, searchTerm, getCycleRange, categories, sortOrder]);

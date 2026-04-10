@@ -14,7 +14,7 @@ interface FinanceState {
 
   loadInitialData: () => Promise<void>;
   loadTransactions: () => Promise<void>;
-  addTransaction: (tx: Omit<Transaction, 'id' | 'usuarioId'>) => Promise<void>;
+  addTransaction: (tx: Omit<Transaction, 'id' | 'usuarioId' | 'createdAt'>) => Promise<void>;
   updateTransaction: (id: string, tx: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
 

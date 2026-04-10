@@ -182,8 +182,8 @@ export const Dashboard = () => {
       const dateB = new Date(b.data + 'T12:00:00').getTime();
       if (dateA !== dateB) return dateB - dateA;
       
-      const timeA = new Date(a.createdAt).getTime();
-      const timeB = new Date(b.createdAt).getTime();
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return timeB - timeA;
     })
   , [cycleTransactions]);
