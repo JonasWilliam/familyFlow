@@ -157,6 +157,20 @@ export class AuthController {
         include: { family: true }
       });
 
+      // Self-healing: Ensure user has at least one Member record with their name
+      const existingMember = await prisma.member.findFirst({
+        where: { usuarioId: usuarioId as string }
+      });
+
+      if (!existingMember) {
+        await prisma.member.create({
+          data: {
+            nome: updatedUser.nome.split(' ')[0],
+            usuarioId: updatedUser.id
+          }
+        });
+      }
+
       const { senha: _, ...userWithoutPassword } = updatedUser;
       res.status(200).json({ 
         message: 'Você entrou na família!', 
