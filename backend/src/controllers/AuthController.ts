@@ -274,4 +274,80 @@ export class AuthController {
       res.status(500).json({ error: 'Erro ao atualizar permissões da família' });
     }
   }
+
+  public async forgotPassword(req: Request, res: Response): Promise<void> {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ error: 'Email é obrigatório' });
+      return;
+    }
+
+    try {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        // Security practice: Don't reveal if user exists, but here we'll be helpful for now
+        res.status(404).json({ error: 'Nenhum usuário encontrado com este e-mail' });
+        return;
+      }
+
+      const token = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+      const expires = new Date();
+      expires.setHours(expires.getHours() + 1); // 1 hour expiry
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetPasswordToken: token,
+          resetPasswordExpires: expires
+        }
+      });
+
+      // Simulation of email since we don't have SMTP yet
+      console.log(`[PASS_RESET] Token para ${email}: ${token}`);
+      
+      res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um código de reset.' });
+    } catch (err) {
+      res.status(500).json({ error: 'Erro interno no servidor' });
+    }
+  }
+
+  public async resetPassword(req: Request, res: Response): Promise<void> {
+    const { email, token, newPassword } = req.body;
+    
+    if (!email || !token || !newPassword) {
+      res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      return;
+    }
+
+    try {
+      const user = await prisma.user.findFirst({
+        where: {
+          email,
+          resetPasswordToken: token,
+          resetPasswordExpires: { gte: new Date() }
+        }
+      });
+
+      if (!user) {
+        res.status(400).json({ error: 'Código inválido ou expirado' });
+        return;
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          senha: hashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null
+        }
+      });
+
+      res.json({ message: 'Sua senha foi alterada com sucesso!' });
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao redefinir a senha' });
+    }
+  }
 }

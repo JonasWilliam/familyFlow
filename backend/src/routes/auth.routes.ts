@@ -9,5 +9,7 @@ authRoutes.post('/register', (req, res) => authController.register(req, res));
 authRoutes.post('/join-family', (req, res) => authController.joinFamily(req, res));
 authRoutes.post('/update-permissions', (req, res) => authController.updateFamilyPermissions(req, res));
 authRoutes.post('/update-profile', (req, res) => authController.updateProfile(req, res));
+authRoutes.post('/forgot-password', (req, res) => authController.forgotPassword(req, res));
+authRoutes.post('/reset-password', (req, res) => authController.resetPassword(req, res));
 
 export default authRoutes;

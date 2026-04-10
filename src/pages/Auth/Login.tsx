@@ -9,12 +9,17 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 
 export const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isReset, setIsReset] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [nome, setNome] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetStep, setResetStep] = useState(1);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [searchParams] = useSearchParams();
   const { setUser } = useFinanceStore();
 
@@ -28,15 +33,34 @@ export const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const data = await ApiService.login(email, senha);
-        setUser(data.user);
+      if (isReset) {
+        if (resetStep === 1) {
+          const res = await ApiService.forgotPassword(email);
+          setSuccess(res.message);
+          setResetStep(2);
+        } else {
+          await ApiService.resetPassword({ email, token: resetToken, newPassword });
+          setSuccess('Senha alterada com sucesso! Faça login agora.');
+          setTimeout(() => {
+            setIsReset(false);
+            setResetStep(1);
+            setResetToken('');
+            setNewPassword('');
+            setSuccess('');
+          }, 3000);
+        }
       } else {
-        const data = await ApiService.register(nome, email, senha, inviteCode);
-        setUser(data.user);
+        if (isLogin) {
+          const data = await ApiService.login(email, senha);
+          setUser(data.user);
+        } else {
+          const data = await ApiService.register(nome, email, senha, inviteCode);
+          setUser(data.user);
+        }
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ocorreu um erro inesperado';
@@ -240,12 +264,10 @@ export const Login = () => {
               letterSpacing: '-0.025em',
               marginBottom: '0.375rem',
             }}>
-              {isLogin ? 'Bem-vindo de volta' : 'Criar sua conta'}
+              {isReset ? 'Recuperar senha' : (isLogin ? 'Bem-vindo de volta' : 'Criar sua conta')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              {isLogin
-                ? 'Entre na sua conta para continuar'
-                : 'Comece a controlar suas finanças agora'}
+              {isReset ? 'Defina uma nova senha para sua conta' : (isLogin ? 'Entre na sua conta para continuar' : 'Comece a controlar suas finanças agora')}
             </p>
           </div>
 
@@ -264,8 +286,23 @@ export const Login = () => {
             </div>
           )}
 
+          {success && (
+            <div style={{
+              padding: '0.75rem 1rem',
+              background: 'var(--success-50)',
+              color: 'var(--success-600)',
+              borderRadius: 'var(--radius-lg)',
+              marginBottom: '1.25rem',
+              fontSize: '0.8125rem',
+              fontWeight: 500,
+              border: '1px solid rgba(16, 185, 129, 0.15)',
+            }}>
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {!isLogin && (
+            {!isReset && !isLogin && (
               <Input
                 label="Nome completo"
                 placeholder="Ex: João Silva"
@@ -276,7 +313,7 @@ export const Login = () => {
               />
             )}
 
-            {!isLogin && (
+            {!isReset && !isLogin && (
               <Input
                 label="Código da Família (Opcional)"
                 placeholder="Ex: A1B2C3D4"
@@ -285,6 +322,7 @@ export const Login = () => {
                 icon={<Sparkles size={16} />}
               />
             )}
+
             <Input
               label="E-mail"
               type="email"
@@ -293,46 +331,102 @@ export const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               icon={<Mail size={16} />}
               required
+              disabled={isReset && resetStep === 2}
             />
-            <Input
-              label="Senha"
-              type="password"
-              placeholder="••••••••"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              icon={<Lock size={16} />}
-              required
-            />
+
+            {!isReset && (
+              <div style={{ position: 'relative' }}>
+                <Input
+                  label="Senha"
+                  type="password"
+                  placeholder="••••••••"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  icon={<Lock size={16} />}
+                  required
+                />
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => { setIsReset(true); setResetStep(1); setError(''); setSuccess(''); }}
+                    style={{
+                      position: 'absolute',
+                      top: '0',
+                      right: '0',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--brand-600)',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Esqueceu a senha?
+                  </button>
+                )}
+              </div>
+            )}
+
+            {isReset && resetStep === 2 && (
+              <>
+                <Input
+                  label="Código de 6 dígitos"
+                  placeholder="000000"
+                  maxLength={6}
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
+                  icon={<Shield size={16} />}
+                  required
+                />
+                <Input
+                  label="Nova Senha"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  icon={<Lock size={16} />}
+                  required
+                />
+              </>
+            )}
 
             <Button fullWidth type="submit" size="lg" loading={loading} style={{ marginTop: '0.5rem' }}>
-              {isLogin ? 'Entrar' : 'Criar conta'}
+              {isReset ? (resetStep === 1 ? 'Receber código' : 'Alterar senha') : (isLogin ? 'Entrar' : 'Criar conta')}
               <ArrowRight size={16} />
             </Button>
+
+            {isReset && (
+              <Button variant="ghost" fullWidth onClick={() => { setIsReset(false); setResetStep(1); setError(''); setSuccess(''); }}>
+                Voltar para o Login
+              </Button>
+            )}
           </form>
 
-          <div style={{
-            marginTop: '1.75rem',
-            textAlign: 'center',
-            paddingTop: '1.25rem',
-            borderTop: '1px solid var(--border-light)',
-          }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              {isLogin ? 'Não tem uma conta? ' : 'Já tem conta? '}
-            </span>
-            <button
-              onClick={() => { setIsLogin(!isLogin); setError(''); }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--brand-600)',
-                cursor: 'pointer',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-              }}
-            >
-              {isLogin ? 'Cadastre-se gratuitamente' : 'Faça login'}
-            </button>
-          </div>
+          {!isReset && (
+            <div style={{
+              marginTop: '1.75rem',
+              textAlign: 'center',
+              paddingTop: '1.25rem',
+              borderTop: '1px solid var(--border-light)',
+            }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                {isLogin ? 'Não tem uma conta? ' : 'Já tem conta? '}
+              </span>
+              <button
+                onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--brand-600)',
+                  cursor: 'pointer',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                }}
+              >
+                {isLogin ? 'Cadastre-se gratuitamente' : 'Faça login'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

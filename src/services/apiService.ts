@@ -27,6 +27,16 @@ export const ApiService = {
       method: 'POST', body: JSON.stringify({ nome, email, senha, inviteCode }),
     }),
 
+  forgotPassword: (email: string) =>
+    request<{ message: string }>(`${API_URL}/auth/forgot-password`, {
+      method: 'POST', body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (payload: any) =>
+    request<{ message: string }>(`${API_URL}/auth/reset-password`, {
+      method: 'POST', body: JSON.stringify(payload),
+    }),
+
   // Transactions
   getTransactions: (usuarioId: string) =>
     request<Transaction[]>(`${API_URL}/transactions/${usuarioId}`),
