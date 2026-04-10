@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { 
-  TrendingUp, Plus, Pencil, Trash2, 
+  Plus, Pencil, Trash2, 
   Wallet, PieChart, BarChart3, Bitcoin, 
   ShieldCheck, Coins, Target
 } from 'lucide-react';

@@ -114,7 +114,7 @@ export const AppLayout: React.FC = () => {
             <NavLink to="/cards" icon={<CreditCard size={20} />} label="Meus Cartões" />
           )}
           
-          {(user.role === 'HEAD' || (!user?.family?.blockedMenus?.includes('categories') || !user?.family?.blockedMenus?.includes('members'))) && (
+          {(user?.role === 'HEAD' || (!user?.family?.blockedMenus?.includes('categories') || !user?.family?.blockedMenus?.includes('members'))) && (
             <div style={{ marginTop: '2.5rem', marginBottom: '0.75rem', padding: '0 0.875rem', fontSize: '0.65rem', fontWeight: 900, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Gestão</div>
           )}
           

@@ -12,6 +12,7 @@ export interface User {
   role: 'HEAD' | 'MEMBER';
   familyId?: string;
   family?: Family;
+  initialBalance?: number;
 }
 
 export interface Member {

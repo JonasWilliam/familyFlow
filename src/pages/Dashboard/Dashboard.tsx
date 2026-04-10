@@ -77,7 +77,7 @@ export const Dashboard = () => {
         membroId,
         tipo,
         metodoPagamento,
-        cartaoId: metodoPagamento === 'cartao' ? cartaoId : null,
+        cartaoId: metodoPagamento === 'cartao' ? cartaoId : undefined,
         parcelaAtual: 1,
         parcelasTotais: Number(parcelasTotais)
       });

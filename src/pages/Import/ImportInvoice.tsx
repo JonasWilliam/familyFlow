@@ -16,7 +16,7 @@ interface ParsedItem {
 }
 
 export const ImportInvoice = () => {
-  const { user, members, categories, loadMembers, loadCategories, addTransaction } = useFinanceStore();
+  const { categories, members, loadMembers, loadCategories, addTransaction } = useFinanceStore();
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -137,7 +137,6 @@ export const ImportInvoice = () => {
           tipo: item.tipo as 'gasto' | 'receita',
           categoriaId,
           membroId,
-          usuarioId: user?.id || '',
         });
         count++;
       } catch (err) {

@@ -10,7 +10,7 @@ import {
   Receipt, Plus, Pencil, Trash2,
   FileText, DollarSign, Calendar, Search, 
   ChevronLeft, ChevronRight,
-  ArrowDownAZ, ArrowUpAZ
+  ArrowDownAZ, ArrowUpAZ, AlertCircle
 } from 'lucide-react';
 
 import { maskCurrency, parseCurrencyBRL, formatCurrencyBRL } from '../../utils/formatters';

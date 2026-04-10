@@ -7,7 +7,7 @@ import { Modal } from '../../components/ui/Modal';
 import { 
   Users, Plus, Pencil, Trash2, UserCircle, 
   AlertCircle, LogIn, Sparkles, Link2, 
-  Check, Copy, Share, ArrowRight, PartyPopper, ShieldCheck, Loader2
+  Check, Copy, ArrowRight, PartyPopper, ShieldCheck, Loader2
 } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { ApiService } from '../../services/apiService';
@@ -17,11 +17,9 @@ export const MembersManagement = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [nome, setNome] = useState('');
-  const [error, setError] = useState('');
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
 
   // Estados para Família
@@ -147,7 +145,6 @@ export const MembersManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     try {
       if (editingId) {
         await updateMember(editingId, nome);
@@ -157,7 +154,7 @@ export const MembersManagement = () => {
       closeModal();
       showSuccess(editingId ? 'Membro atualizado' : 'Membro adicionado');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erro');
+      showError(err instanceof Error ? err.message : 'Erro');
     }
   };
 
@@ -171,26 +168,23 @@ export const MembersManagement = () => {
     setModalOpen(false);
     setEditingId(null);
     setNome('');
-    setError('');
   };
 
   const confirmDelete = (id: string) => {
     setDeleteTargetId(id);
-    setDeleteError('');
     setDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
     setDeleting(true);
-    setDeleteError('');
     try {
       await deleteMember(deleteTargetId);
       setDeleteModalOpen(false);
       setDeleteTargetId(null);
       showSuccess('Membro removido');
     } catch (err: unknown) {
-      setDeleteError(err instanceof Error ? err.message : 'Erro ao excluir');
+      showError(err instanceof Error ? err.message : 'Erro ao excluir');
     } finally {
       setDeleting(false);
     }
@@ -215,7 +209,7 @@ export const MembersManagement = () => {
       )}
 
       {/* CENTRAL DE CONVITE PREMIUM (ROBUSTA) */}
-      <Card className="glass" noPadding style={{ border: 'none', background: 'white', overflow: 'hidden' }}>
+      <Card padding="0" style={{ border: 'none', background: 'transparent', overflow: 'hidden' }} className="animate-fade-in-delay-1">
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 380px', minHeight: '220px' }}>
           {/* Lado Esquerdo: Info e Branding */}
           <div style={{ 
@@ -355,7 +349,7 @@ export const MembersManagement = () => {
         </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {members.map((m, i) => (
+          {members.map((m) => (
             <Card key={m.id} className="glass" padding="1.5rem" hover style={{ border: '1px solid var(--border-light)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                 <div style={{
