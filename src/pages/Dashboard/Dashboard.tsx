@@ -139,19 +139,32 @@ export const Dashboard = () => {
   const saldoDisponivelReal = initialBalance + totalReceitasHist - totalGastosReaisHist;
   const patrimonioLiquido = saldoDisponivelReal + totalPatrimonio;
 
-  // Agrupamento de Faturas por Cartão
+  // Agrupamento de Faturas por Cartão respeitando o dia de fechamento individual
   const invoiceData = useMemo(() => {
     const data: Record<string, { total: number, items: typeof transactions }> = {};
     
     cycleTransactions.filter(t => t.metodoPagamento === 'cartao').forEach(t => {
       const cardId = t.cartaoId || 'unclassified';
+      const card = cards.find(c => c.id === cardId);
+      
+      // Lógica de Fechamento: Se o dia da compra >= dia do fechamento do cartão,
+      // ele NÃO pertence a esta fatura atual (mês vigente), e sim à próxima.
+      if (card && card.fechamento) {
+        const purchaseDate = new Date(t.data + 'T12:00:00');
+        const purchaseDay = purchaseDate.getDate();
+        
+        if (purchaseDay >= card.fechamento) {
+          return; // Pula este item, ele aparecerá no Dashboard quando o ciclo virar
+        }
+      }
+
       if (!data[cardId]) data[cardId] = { total: 0, items: [] };
       data[cardId].total += t.valor;
       data[cardId].items.push(t);
     });
 
     return data;
-  }, [cycleTransactions]);
+  }, [cycleTransactions, cards]);
 
   const totalCardFaturas = Object.values(invoiceData).reduce((sum, d) => sum + d.total, 0);
 
