@@ -43,7 +43,7 @@ export const TransactionList = () => {
 
   // Estados de Filtro, Ordenação e Paginação
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterPeriod, setFilterPeriod] = useState<'cycle' | 'prev' | 'all'>('cycle');
+  const [filterPeriod, setFilterPeriod] = useState<'cycle' | 'prev' | 'all'>('all');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;

@@ -38,7 +38,6 @@ export async function seedCategories() {
     console.log('✅ Categorias padrão prontas!');
   } catch (err) {
     console.error('❌ Erro no seeding:', err);
+    throw err;
   }
 }
-
-seedCategories();

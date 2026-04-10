@@ -174,10 +174,10 @@ export const Dashboard = () => {
   const firstName = user?.nome.split(' ')[0] ?? 'Usuário';
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.nome ?? 'Outros';
 
-  // PAGINAÇÃO ÚLTIMOS LANÇAMENTOS
+  // ÚLTIMOS LANÇAMENTOS REAIS (Sem filtro de ciclo para não parecer vazio)
   const txItemsPerPage = 5;
-  const sortedCycleTxs = useMemo(() => 
-    [...cycleTransactions].sort((a, b) => {
+  const recentTransactions = useMemo(() => 
+    [...transactions].sort((a, b) => {
       const dateA = new Date(a.data + 'T12:00:00').getTime();
       const dateB = new Date(b.data + 'T12:00:00').getTime();
       if (dateA !== dateB) return dateB - dateA;
@@ -186,10 +186,10 @@ export const Dashboard = () => {
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return timeB - timeA;
     })
-  , [cycleTransactions]);
+  , [transactions]);
 
-  const paginatedTxs = sortedCycleTxs.slice(txPage * txItemsPerPage, (txPage + 1) * txItemsPerPage);
-  const hasNextPage = (txPage + 1) * txItemsPerPage < sortedCycleTxs.length;
+  const paginatedTxs = recentTransactions.slice(txPage * txItemsPerPage, (txPage + 1) * txItemsPerPage);
+  const hasNextPage = (txPage + 1) * txItemsPerPage < recentTransactions.length;
 
   return (
     <div className="animate-fade-in" style={{ 
@@ -454,7 +454,7 @@ export const Dashboard = () => {
           </div>
 
           <Card padding="0" hover={false} style={{ background: 'white', border: '1px solid var(--border-light)' }}>
-            {cycleTransactions.length === 0 ? (
+            {transactions.length === 0 ? (
               <div style={{ padding: '3rem', textAlign: 'center' }}>
                 <Receipt size={32} style={{ color: 'var(--text-tertiary)', opacity: 0.2, marginBottom: '1rem' }} />
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>Nenhum lançamento no período.</p>
