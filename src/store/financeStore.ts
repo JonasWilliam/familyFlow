@@ -42,13 +42,12 @@ interface FinanceState {
   updateCard: (id: string, card: Partial<CreditCard>) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
   
-  // Helpers de Fatura
   getInvoiceTransactions: (cardId: string, month: number, year: number) => Transaction[];
-  
+  updateFamilyPermissions: (blockedMenus: string) => Promise<void>;
+  updateProfile: (data: { initialBalance: number; nome?: string }) => Promise<void>;
   reset: () => void;
 }
 
-// Função utilitária para tratar datas sem erro de UTC
 const parseLocalDate = (dateStr: string) => {
   const [year, month, day] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, day, 12, 0, 0);
@@ -100,27 +99,37 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     const purchaseDate = parseLocalDate(tx.data);
     const purchaseDay = purchaseDate.getDate();
 
-    // Lógica para compras com cartão
     if (tx.metodoPagamento === 'cartao') {
       const card = cards.find(c => c.id === tx.cartaoId);
-      
-      // Se comprou após o fechamento, a cobrança pula para o próximo mês
-      let startMonthOffset = 0;
+      let invoiceMonth = purchaseDate.getMonth();
+      let invoiceYear = purchaseDate.getFullYear();
+
       if (card && purchaseDay > card.fechamento) {
+        invoiceMonth++;
+        if (invoiceMonth > 11) {
+          invoiceMonth = 0;
+          invoiceYear++;
+        }
+      }
+
+      const maturityDate = new Date(invoiceYear, invoiceMonth, card?.vencimento || 1, 12, 0, 0);
+      if (maturityDate < purchaseDate) {
+        maturityDate.setMonth(maturityDate.getMonth() + 1);
+      }
+
+      const { end: currentCycleEnd } = get().getCycleRange();
+      let startMonthOffset = 0;
+      if (maturityDate > currentCycleEnd) {
         startMonthOffset = 1;
       }
 
       if (tx.parcelasTotais && tx.parcelasTotais > 1) {
-        // Lógica de Parcelamento
         const promises = [];
         const valorParcela = tx.valor / tx.parcelasTotais;
 
         for (let i = 0; i < tx.parcelasTotais; i++) {
           const installmentDate = new Date(purchaseDate);
           installmentDate.setMonth(purchaseDate.getMonth() + i + startMonthOffset);
-          
-          // Fixando o dia para garantir que não varie por meses menores (opcional, aqui mantemos o dia original)
-          // Mas garantimos que o formato de data evite o erro de offset
           const dateStr = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}-${String(installmentDate.getDate()).padStart(2, '0')}`;
 
           promises.push(ApiService.createTransaction({
@@ -135,7 +144,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         await Promise.all(promises);
         await loadTransactions();
       } else {
-        // Compra à vista no cartão (também respeita o fechamento)
         const installmentDate = new Date(purchaseDate);
         if (startMonthOffset > 0) {
           installmentDate.setMonth(purchaseDate.getMonth() + startMonthOffset);
@@ -150,7 +158,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         set(state => ({ transactions: [...state.transactions, newTx] }));
       }
     } else {
-      // Dinheiro / Pix (Direto)
       const newTx = await ApiService.createTransaction({ ...tx, usuarioId: user.id });
       set(state => ({ transactions: [...state.transactions, newTx] }));
     }
@@ -162,6 +169,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       transactions: state.transactions.map(t => t.id === id ? updated : t)
     }));
   },
+
   deleteTransaction: async (id) => {
     await ApiService.deleteTransaction(id);
     set(state => ({
@@ -169,7 +177,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }));
   },
 
-  // --- Members ---
   loadMembers: async () => {
     const { user } = get();
     if (!user) return;
@@ -197,7 +204,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }));
   },
 
-  // --- Categories ---
   loadCategories: async () => {
     try {
       const categories = await ApiService.getCategories();
@@ -221,7 +227,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }));
   },
 
-  // --- Settings & Cycle ---
   loadSettings: async () => {
     try {
       const settings = await ApiService.getSettings();
@@ -249,7 +254,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     return { start, end };
   },
 
-  // --- Investments ---
   loadInvestments: async () => {
     const { user } = get();
     if (!user) return;
@@ -280,7 +284,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }));
   },
 
-  // --- Cards ---
   loadCards: async () => {
     const { user } = get();
     if (!user) return;
@@ -308,7 +311,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     set(state => ({ cards: state.cards.filter(c => c.id !== id) }));
   },
 
-  // Helpers
   getInvoiceTransactions: (cardId, month, year) => {
     const { transactions } = get();
     return transactions.filter(t => {
@@ -316,6 +318,38 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       const d = parseLocalDate(t.data);
       return d.getMonth() === month && d.getFullYear() === year;
     });
+  },
+
+  updateFamilyPermissions: async (blockedMenus) => {
+    const { user, setUser } = get();
+    if (!user || !user.familyId) return;
+    
+    await ApiService.updateFamilyPermissions({
+      familyId: user.familyId,
+      usuarioId: user.id,
+      blockedMenus
+    });
+
+    const updatedUser = { 
+      ...user, 
+      family: { ...user.family, blockedMenus } 
+    };
+    setUser(updatedUser as any);
+  },
+
+  updateProfile: async (data) => {
+    const { user, setUser } = get();
+    if (!user) return;
+    try {
+      const response = await ApiService.updateProfile({ 
+        usuarioId: user.id, 
+        ...data 
+      });
+      setUser(response.user);
+    } catch (err) {
+      console.error('Erro ao atualizar perfil:', err);
+      throw err;
+    }
   },
 
   reset: () => {

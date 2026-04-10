@@ -14,8 +14,9 @@ export class AuthController {
     }
 
     try {
-      const user = await prisma.user.findUnique({
-        where: { email: email as string }
+      let user = await prisma.user.findUnique({
+        where: { email: email as string },
+        include: { family: true }
       });
 
       if (!user) {
@@ -24,32 +25,34 @@ export class AuthController {
       }
 
       const isPasswordValid = await bcrypt.compare(senha, user.senha);
-
       if (!isPasswordValid) {
         res.status(401).json({ error: 'Credenciais inválidas' });
         return;
       }
 
-      // Professional Auth usually returns a token, but we keep the user object for now 
-      // as the frontend expects it. We can add JWT later for full professional feel.
-      const { senha: _, ...userWithoutPassword } = user;
+      // Self-healing: Ensure family has a valid inviteCode
+      if (user.family && (!user.family.inviteCode || user.family.inviteCode.length > 10)) {
+        const newCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        const updatedFamily = await prisma.family.update({
+          where: { id: user.family.id },
+          data: { inviteCode: newCode }
+        });
+        user.family = updatedFamily;
+      }
 
+      const { senha: _, ...userWithoutPassword } = user;
       res.status(200).json({ 
         message: 'Login realizado com sucesso', 
         user: userWithoutPassword 
       });
     } catch (err: any) {
-      console.error('SERVER_ERROR (Login):', {
-        message: err.message,
-        stack: err.stack,
-        code: err.code
-      });
+      console.error('SERVER_ERROR (Login):', err);
       res.status(500).json({ error: 'Erro de servidor ao tentar realizar login' });
     }
   }
 
   public async register(req: Request, res: Response): Promise<void> {
-    const { nome, email, senha } = req.body;
+    const { nome, email, senha, inviteCode } = req.body;
 
     if (!nome || !email || !senha) {
       res.status(400).json({ error: 'Todos os campos são obrigatórios' });
@@ -57,7 +60,6 @@ export class AuthController {
     }
 
     try {
-      // Check if user already exists
       const existingUser = await prisma.user.findUnique({
         where: { email: email as string }
       });
@@ -70,15 +72,40 @@ export class AuthController {
       const hashedPassword = await bcrypt.hash(senha, 10);
       const verificationToken = crypto.randomUUID();
 
-      // Start transaction to create User and its first Member
       const newUser = await prisma.$transaction(async (tx) => {
+        let familyId: string | null = null;
+
+        if (inviteCode) {
+          const family = await tx.family.findUnique({
+            where: { inviteCode }
+          });
+          if (!family) {
+            throw new Error('Código de convite inválido');
+          }
+          familyId = family.id;
+        }
+
+        // If no invite code, create a new Family for the user
+        if (!familyId) {
+          const newFamily = await tx.family.create({
+            data: {
+                nome: `Família de ${nome.split(' ')[0]}`,
+                inviteCode: crypto.randomBytes(4).toString('hex').toUpperCase()
+            }
+          });
+          familyId = newFamily.id;
+        }
+
         const user = await tx.user.create({
           data: {
             nome,
             email,
             senha: hashedPassword,
-            verificationToken
-          }
+            verificationToken,
+            familyId,
+            role: inviteCode ? 'MEMBER' : 'HEAD' // Set as HEAD if they are the creator
+          },
+          include: { family: true }
         });
 
         await tx.member.create({
@@ -91,8 +118,6 @@ export class AuthController {
         return user;
       });
 
-      console.log(`[MAIL SIMULATION] Verification email sent to ${email} with token ${verificationToken}`);
-
       const { senha: _, ...userWithoutPassword } = newUser;
 
       res.status(201).json({ 
@@ -100,12 +125,125 @@ export class AuthController {
         user: userWithoutPassword 
       });
     } catch (err: any) {
-      console.error('SERVER_ERROR (Register):', {
-        message: err.message,
-        stack: err.stack,
-        code: err.code
+      console.error('SERVER_ERROR (Register):', err);
+      res.status(500).json({ error: err.message || 'Erro ao registrar usuário.' });
+    }
+  }
+
+  public async joinFamily(req: Request, res: Response): Promise<void> {
+    const { inviteCode, usuarioId } = req.body;
+
+    if (!inviteCode || !usuarioId) {
+      res.status(400).json({ error: 'Código e ID do usuário são obrigatórios' });
+      return;
+    }
+
+    try {
+      const family = await prisma.family.findUnique({
+        where: { inviteCode }
       });
-      res.status(500).json({ error: 'Erro ao registrar usuário (Produção).' });
+
+      if (!family) {
+        res.status(404).json({ error: 'Código de convite não encontrado' });
+        return;
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: usuarioId as string },
+        data: { 
+          familyId: family.id,
+          role: 'MEMBER' // Joining members are always REGULAR members
+        },
+        include: { family: true }
+      });
+
+      const { senha: _, ...userWithoutPassword } = updatedUser;
+      res.status(200).json({ 
+        message: 'Você entrou na família!', 
+        user: userWithoutPassword 
+      });
+    } catch (err: any) {
+      console.error('SERVER_ERROR (JoinFamily):', err);
+      res.status(500).json({ error: 'Erro ao entrar na família' });
+    }
+  }
+
+  public async updateProfile(req: Request, res: Response): Promise<void> {
+    try {
+      const { usuarioId, initialBalance, nome } = req.body;
+      let user = await prisma.user.update({
+        where: { id: usuarioId },
+        data: { 
+          initialBalance: initialBalance !== undefined ? parseFloat(initialBalance) : undefined,
+          nome: nome || undefined
+        },
+        include: { family: true }
+      });
+
+      // Self-healing: Ensure family has a valid inviteCode
+      if (user.family && (!user.family.inviteCode || user.family.inviteCode.length > 10)) {
+        const newCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        const updatedFamily = await prisma.family.update({
+          where: { id: user.family.id },
+          data: { inviteCode: newCode }
+        });
+        user.family = updatedFamily;
+      } else if (!user.family) {
+        // If user has NO family, create one for them
+        const newCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        const newFamily = await prisma.family.create({
+          data: {
+              nome: `Família de ${user.nome.split(' ')[0]}`,
+              inviteCode: newCode
+          }
+        });
+        user = await prisma.user.update({
+            where: { id: usuarioId },
+            data: { familyId: newFamily.id, role: 'HEAD' },
+            include: { family: true }
+        });
+      }
+
+      const { senha: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error('SERVER_ERROR (UpdateProfile):', error);
+      res.status(500).json({ error: 'Erro ao atualizar perfil' });
+    }
+  }
+
+  public async updateFamilyPermissions(req: Request, res: Response): Promise<void> {
+    const { familyId, blockedMenus, usuarioId } = req.body;
+
+    if (!familyId || !usuarioId) {
+      res.status(400).json({ error: 'ID da família e do usuário são obrigatórios' });
+      return;
+    }
+
+    try {
+      // Security check: Verify if the requesting user is the HEAD of the family
+      const user = await prisma.user.findUnique({
+        where: { id: usuarioId as string }
+      });
+
+      if (!user || user.role !== 'HEAD' || user.familyId !== familyId) {
+        res.status(403).json({ error: 'Apenas o chefe da família pode alterar permissões' });
+        return;
+      }
+
+      const updatedFamily = await prisma.family.update({
+        where: { id: familyId as string },
+        data: { blockedMenus },
+        include: { users: { select: { id: true, nome: true, role: true } } }
+      });
+
+      res.status(200).json({ 
+        message: 'Permissões atualizadas com sucesso', 
+        family: updatedFamily 
+      });
+    } catch (err: any) {
+      console.error('SERVER_ERROR (UpdatePermissions):', err);
+      res.status(500).json({ error: 'Erro ao atualizar permissões da família' });
     }
   }
 }

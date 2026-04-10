@@ -9,81 +9,93 @@ datasource db {
 }
 
 model User {
-  id                   String    @id @default(uuid())
+  id                   String        @id @default(uuid())
   nome                 String
-  email                String    @unique
+  email                String        @unique
   senha                String
   emailVerified        DateTime?
   verificationToken    String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  role                 String        @default("MEMBER") // "HEAD" or "MEMBER"
+  initialBalance       Float         @default(0)
 
-  members      Member[]
+  familyId String?
+  family   Family? @relation(fields: [familyId], references: [id])
+
   cards        Card[]
-  transactions Transaction[]
   investments  Investment[]
+  members      Member[]
+  transactions Transaction[]
 
   @@map("usuarios")
 }
 
-model Member {
-  id        String @id @default(uuid())
-  nome      String
-  usuarioId String
-  user      User   @relation(fields: [usuarioId], references: [id])
+model Family {
+  id           String   @id @default(uuid())
+  nome         String
+  inviteCode   String   @unique @default(uuid())
+  blockedMenus String?  @default("") // Comma-separated list of blocked menu keys
+  createdAt    DateTime @default(now())
+  users        User[]
 
+  @@map("familias")
+}
+
+model Member {
+  id           String        @id @default(uuid())
+  nome         String
+  usuarioId    String
+  user         User          @relation(fields: [usuarioId], references: [id])
   transactions Transaction[]
 
   @@map("membros")
 }
 
 model Category {
-  id   String @id @default(uuid())
-  nome String
-  tipo String // "gasto" | "receita"
-
+  id           String        @id @default(uuid())
+  nome         String
+  tipo         String
   transactions Transaction[]
 
   @@map("categorias")
 }
 
 model Card {
-  id          String @id @default(uuid())
-  nome        String
-  limite      Float
-  fechamento  Int
-  vencimento  Int
-  banco       String @default("Outros")
-  last4       String @default("0000")
-  usuarioId   String
-  user        User   @relation(fields: [usuarioId], references: [id])
-
+  id           String        @id @default(uuid())
+  nome         String
+  limite       Float
+  fechamento   Int
+  vencimento   Int
+  banco        String        @default("Outros")
+  last4        String        @default("0000")
+  usuarioId    String
+  user         User          @relation(fields: [usuarioId], references: [id])
   transactions Transaction[]
 
   @@map("cartoes")
 }
 
 model Transaction {
-  id               String   @id @default(uuid())
-  descricao        String
-  valor            Float
-  data             String
-  categoriaId      String
-  membroId         String
-  usuarioId        String
-  tipo             String // "gasto" | "receita"
-  metodoPagamento  String   @default("dinheiro")
-  cartaoId         String?
-  parcelaAtual     Int?
-  parcelasTotais   Int?
-  createdAt        DateTime @default(now())
-
-  category Category @relation(fields: [categoriaId], references: [id])
-  member   Member   @relation(fields: [membroId], references: [id])
-  user     User     @relation(fields: [usuarioId], references: [id])
-  card     Card?    @relation(fields: [cartaoId], references: [id])
+  id              String   @id @default(uuid())
+  descricao       String
+  valor           Float
+  data            String
+  categoriaId     String
+  membroId        String
+  usuarioId       String
+  tipo            String
+  metodoPagamento String   @default("dinheiro")
+  cartaoId        String?
+  parcelaAtual    Int?
+  parcelasTotais  Int?
+  createdAt       DateTime @default(now())
+  card            Card?    @relation(fields: [cartaoId], references: [id])
+  category        Category @relation(fields: [categoriaId], references: [id])
+  member          Member   @relation(fields: [membroId], references: [id])
+  user            User     @relation(fields: [usuarioId], references: [id])
 
   @@map("transacoes")
 }

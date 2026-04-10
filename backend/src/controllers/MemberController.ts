@@ -10,8 +10,20 @@ export class MemberController {
     }
 
     try {
+      const user = await prisma.user.findUnique({
+        where: { id: usuarioId as string },
+        select: { familyId: true }
+      });
+
+      if (!user) {
+        res.status(404).json({ error: 'Usuário não encontrado' });
+        return;
+      }
+
       const members = await prisma.member.findMany({
-        where: { usuarioId: usuarioId as string }
+        where: user.familyId 
+          ? { user: { familyId: user.familyId } }
+          : { usuarioId: usuarioId as string }
       });
       res.status(200).json(members);
     } catch (err) {

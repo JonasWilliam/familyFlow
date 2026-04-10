@@ -1,4 +1,6 @@
-import React from 'react';
+
+
+import React, { useState, useEffect } from 'react';
 import { Wifi } from 'lucide-react';
 
 interface RealisticCardProps {
@@ -22,11 +24,27 @@ const bankColors: Record<string, { bg: string, text: string }> = {
 
 export const RealisticCard: React.FC<RealisticCardProps> = ({ banco, last4, nome, vencimento }) => {
   const styles = bankColors[banco] || bankColors['Outros'];
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      // Subtract padding (approx 48px for layout)
+      const availableWidth = Math.min(width - 48, 350);
+      if (availableWidth < 350) {
+        setScale(availableWidth / 350);
+      } else {
+        setScale(1);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div style={{
-      width: '100%',
-      maxWidth: '350px',
+      width: '350px',
       height: '200px',
       borderRadius: '20px',
       background: styles.bg,
@@ -39,8 +57,11 @@ export const RealisticCard: React.FC<RealisticCardProps> = ({ banco, last4, nome
       justifyContent: 'space-between',
       overflow: 'hidden',
       transition: 'transform 0.3s ease',
+      transform: `scale(${scale})`,
+      transformOrigin: 'top left',
       cursor: 'default',
-      userSelect: 'none'
+      userSelect: 'none',
+      margin: scale < 1 ? `0 0 ${-200 * (1 - scale)}px 0` : '0', // Adjust margin to avoid gap after scaling
     }} className="card-hover">
       
       {/* Glossy Overlay */}

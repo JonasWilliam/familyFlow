@@ -14,15 +14,16 @@ export const Card = ({
   style,
 }: CardProps) => {
   const cardStyle: React.CSSProperties = {
-    background: 'var(--bg-card)',
+    background: style?.background ?? (className.includes('glass') ? 'transparent' : 'var(--bg-card)'),
     border: '1px solid var(--border-light)',
     borderRadius: 'var(--radius-xl)',
     boxShadow: 'var(--shadow-sm)',
     padding,
     transition: hover 
-      ? 'box-shadow var(--transition-base), transform var(--transition-base)' 
+      ? 'all var(--transition-base)' 
       : undefined,
     overflow: 'hidden',
+    position: 'relative',
     ...style,
   };
 

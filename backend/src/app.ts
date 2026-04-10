@@ -12,6 +12,12 @@ import cardRoutes from './routes/card.routes.js';
 
 const app = express();
 
+// Logger simples para debug de rotas
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

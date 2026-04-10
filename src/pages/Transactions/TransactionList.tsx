@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { useFinanceStore } from '../../store/financeStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -21,6 +22,7 @@ export const TransactionList = () => {
     categories, loadCategories, getCycleRange,
     cards, loadCards
   } = useFinanceStore();
+  const isMobile = useIsMobile();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -107,8 +109,10 @@ export const TransactionList = () => {
     setDescricao('');
     setValor('');
     setData(new Date().toISOString().split('T')[0]);
-    setCategoriaId('');
-    setMembroId('');
+    // Auto seleção inteligente
+    const defaultCategory = categories.find(c => c.tipo === 'gasto' && c.nome.toLowerCase().includes('outros')) || categories.find(c => c.tipo === 'gasto');
+    setCategoriaId(defaultCategory ? defaultCategory.id : '');
+    setMembroId(members.length > 0 ? members[0].id : '');
     setTipo('gasto');
     setMetodoPagamento('dinheiro');
     setCartaoId('');
@@ -138,6 +142,9 @@ export const TransactionList = () => {
     };
 
     try {
+      if (!membroId) throw new Error('Por favor, selecione quem realizou o lançamento.');
+      if (!categoriaId) throw new Error('Por favor, selecione a categoria.');
+      
       if (editingId) {
         await updateTransaction(editingId, payload);
       } else {
@@ -249,7 +256,7 @@ export const TransactionList = () => {
         <div style={{ 
           display: 'flex', 
           gap: '1rem', 
-          flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+          flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'center' 
         }}>
           <div style={{ flex: 1, width: '100%', position: 'relative' }}>
@@ -306,7 +313,7 @@ export const TransactionList = () => {
             {paginatedTransactions.map((tx, i) => (
               <div key={tx.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '1rem 1.5rem',
+                padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem',
                 background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.2)',
                 borderBottom: i < paginatedTransactions.length - 1 ? '1px solid var(--border-light)' : 'none',
               }}>
@@ -371,9 +378,14 @@ export const TransactionList = () => {
       </Card>
 
       <Modal isOpen={modalOpen} onClose={closeModal} title={editingId ? 'Editar lançamento' : 'Novo lançamento'}>
-        {error && <div style={{ padding: '0.75rem', background: 'var(--danger-50)', color: 'var(--danger-600)', borderRadius: 'var(--radius-lg)', marginBottom: '1rem', fontSize: '0.8125rem', fontWeight: 500 }}>{error}</div>}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem' }}>
+          
+          {error && (
+            <div style={{ background: 'var(--danger-50)', color: 'var(--danger-600)', padding: '0.75rem', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 600, border: '1px solid var(--danger-200)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             {(['gasto', 'receita'] as const).map((t) => (
               <button key={t} type="button" onClick={() => setTipo(t)}
@@ -391,7 +403,7 @@ export const TransactionList = () => {
 
           <Input label="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Mercado Mensal" icon={<FileText size={18} />} required />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0.75rem' }}>
             <Input 
               label="Valor Total (R$)" 
               type="text" 
@@ -443,7 +455,7 @@ export const TransactionList = () => {
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0.75rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Categoria</label>
               <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} required style={selectStyle}>

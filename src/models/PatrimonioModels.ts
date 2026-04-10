@@ -1,7 +1,17 @@
+export interface Family {
+  id: string;
+  nome: string;
+  inviteCode: string;
+  blockedMenus?: string; // Comma separated keys
+}
+
 export interface User {
   id: string;
   nome: string;
   email: string;
+  role: 'HEAD' | 'MEMBER';
+  familyId?: string;
+  family?: Family;
 }
 
 export interface Member {

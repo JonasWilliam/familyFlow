@@ -46,9 +46,27 @@ export class TransactionController {
     }
 
     try {
+      // Find user to check their family
+      const user = await prisma.user.findUnique({
+        where: { id: usuarioId as string },
+        select: { familyId: true }
+      });
+
+      if (!user) {
+        res.status(404).json({ error: 'Usuário não encontrado' });
+        return;
+      }
+
+      // If user has family, return all transactions for that family
       const transactions = await prisma.transaction.findMany({
-        where: { usuarioId: usuarioId as string },
-        orderBy: { data: 'desc' }
+        where: user.familyId 
+          ? { user: { familyId: user.familyId } }
+          : { usuarioId: usuarioId as string },
+        orderBy: { data: 'desc' },
+        include: { 
+          category: true,
+          member: true
+        }
       });
       res.status(200).json(transactions);
     } catch (err) {

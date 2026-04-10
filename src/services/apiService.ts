@@ -21,9 +21,9 @@ export const ApiService = {
       method: 'POST', body: JSON.stringify({ email, senha }),
     }),
 
-  register: (nome: string, email: string, senha: string) =>
+  register: (nome: string, email: string, senha: string, inviteCode?: string) =>
     request<{ message: string; user: User }>(`${API_URL}/auth/register`, {
-      method: 'POST', body: JSON.stringify({ nome, email, senha }),
+      method: 'POST', body: JSON.stringify({ nome, email, senha, inviteCode }),
     }),
 
   // Transactions
@@ -126,4 +126,25 @@ export const ApiService = {
 
   deleteCard: (id: string) =>
     request<void>(`${API_URL}/cards/${id}`, { method: 'DELETE' }),
+
+  // Generic POST (Legacy/Utility)
+  post: (url: string, body: any) =>
+    request<any>(`${API_URL}${url}`, {
+      method: 'POST', body: JSON.stringify(body),
+    }),
+
+  updateProfile: (data: { usuarioId: string; initialBalance?: number; nome?: string }) =>
+    request<{ user: User }>(`${API_URL}/auth/update-profile`, {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+
+  joinFamily: (inviteCode: string, usuarioId: string) =>
+    request<{ user: User }>(`${API_URL}/auth/join-family`, {
+      method: 'POST', body: JSON.stringify({ inviteCode, usuarioId }),
+    }),
+
+  updateFamilyPermissions: (data: { familyId: string; blockedMenus: string; usuarioId: string }) =>
+    request<{ family: any }>(`${API_URL}/auth/update-permissions`, {
+      method: 'POST', body: JSON.stringify(data),
+    }),
 };

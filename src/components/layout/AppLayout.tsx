@@ -59,57 +59,91 @@ export const AppLayout: React.FC = () => {
         top: 0,
         left: 0,
         bottom: 0,
-        zIndex: 40,
-        padding: '1.5rem 1rem',
+        zIndex: 100, // Garantir que fique acima do Modal Backdrop
+        padding: '2rem 1.25rem',
         display: 'flex',
         flexDirection: 'column',
         borderRight: '1px solid var(--border-light)',
         transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        filter: 'none !important',
+        backdropFilter: 'none !important',
+        background: '#ffffff',
       }}>
-        {/* Logo */}
-        <div style={{ padding: '0 0.5rem 2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Logo - Clickable to Home */}
+        <RouterNavLink 
+          to="/" 
+          onClick={() => setIsMobileMenuOpen(false)}
+          style={{ 
+            padding: '0 0.75rem 2.5rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.875rem',
+            textDecoration: 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ 
-            width: '36px', height: '36px', borderRadius: '10px', 
+            width: '40px', height: '40px', borderRadius: '12px', 
             background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+            boxShadow: 'var(--shadow-brand)',
+            color: 'white'
           }}>
-            <LayoutDashboard size={20} color="white" />
+            <LayoutDashboard size={22} />
           </div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
             Family<span style={{ color: 'var(--brand-600)' }}>Flow</span>
           </h1>
-        </div>
+        </RouterNavLink>
 
         {/* Navigation */}
         <nav style={{ flex: 1 }}>
-          <div style={{ marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.7rem', fontWeight: 900, color: 'var(--slate-600)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Menu Principal</div>
+          <div style={{ marginBottom: '0.75rem', padding: '0 0.875rem', fontSize: '0.65rem', fontWeight: 900, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Menu</div>
           <NavLink to="/" icon={<LayoutDashboard size={20} />} label="Dashboard" />
-          <NavLink to="/transactions" icon={<Receipt size={20} />} label="Lançamentos" />
-          <NavLink to="/investments" icon={<TrendingUp size={20} />} label="Investimentos" />
-          <NavLink to="/cards" icon={<CreditCard size={20} />} label="Meus Cartões" />
           
-          <div style={{ marginTop: '1.5rem', marginBottom: '0.5rem', padding: '0 0.75rem', fontSize: '0.7rem', fontWeight: 900, color: 'var(--slate-600)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gestão</div>
-          <NavLink to="/categories" icon={<Tags size={20} />} label="Categorias" />
-          <NavLink to="/members" icon={<Users size={20} />} label="Família" />
+          {(!user?.family?.blockedMenus?.includes('transactions') || user.role === 'HEAD') && (
+            <NavLink to="/transactions" icon={<Receipt size={20} />} label="Lançamentos" />
+          )}
+
+          {(!user?.family?.blockedMenus?.includes('investments') || user.role === 'HEAD') && (
+            <NavLink to="/investments" icon={<TrendingUp size={20} />} label="Investimentos" />
+          )}
+
+          {(!user?.family?.blockedMenus?.includes('cards') || user.role === 'HEAD') && (
+            <NavLink to="/cards" icon={<CreditCard size={20} />} label="Meus Cartões" />
+          )}
+          
+          {(user.role === 'HEAD' || (!user?.family?.blockedMenus?.includes('categories') || !user?.family?.blockedMenus?.includes('members'))) && (
+            <div style={{ marginTop: '2.5rem', marginBottom: '0.75rem', padding: '0 0.875rem', fontSize: '0.65rem', fontWeight: 900, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Gestão</div>
+          )}
+          
+          {(!user?.family?.blockedMenus?.includes('categories') || user.role === 'HEAD') && (
+            <NavLink to="/categories" icon={<Tags size={20} />} label="Categorias" />
+          )}
+
+          {(!user?.family?.blockedMenus?.includes('members') || user.role === 'HEAD') && (
+            <NavLink to="/members" icon={<Users size={20} />} label="Família" />
+          )}
+          
           <NavLink to="/settings" icon={<Settings size={20} />} label="Configurações" />
         </nav>
 
         {/* User Profile / Logout */}
-        <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-light)' }}>
-          <div style={{ padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+        <div style={{ marginTop: 'auto' }}>
+          <div style={{ padding: '1rem 0.875rem', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', background: 'rgba(255,255,255,0.3)', borderRadius: 'var(--radius-xl)' }}>
             <div style={{ 
-              width: '40px', height: '40px', borderRadius: '50%', 
-              background: 'var(--slate-100)', color: 'var(--brand-600)',
+              width: '44px', height: '44px', borderRadius: '50%', 
+              background: 'white', color: 'var(--brand-600)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: '1rem'
+              fontWeight: 900, fontSize: '1.125rem',
+              boxShadow: 'var(--shadow-sm)'
             }}>
               {user?.nome?.charAt(0) || 'U'}
             </div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.nome}</p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</p>
+              <p style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.nome?.split(' ')[0]}</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>ID Ativo</p>
             </div>
           </div>
           <button 
@@ -118,22 +152,28 @@ export const AppLayout: React.FC = () => {
               width: '100%',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.75rem 1rem',
+              gap: '0.875rem',
+              padding: '0.875rem 1rem',
               borderRadius: 'var(--radius-lg)',
               border: 'none',
               background: 'transparent',
-              color: 'var(--danger-500)',
+              color: 'var(--slate-400)',
               fontSize: '0.875rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--danger-50)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--danger-500)';
+              e.currentTarget.style.background = 'var(--danger-50)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--slate-400)';
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
             <LogOut size={18} />
-            <span>Sair do App</span>
+            <span>Encerrar Sessão</span>
           </button>
         </div>
       </aside>
@@ -146,12 +186,15 @@ export const AppLayout: React.FC = () => {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 35,
+          zIndex: 90, // Abaixo do menu mobile mas acima do conteúdo
           padding: '0.875rem 1.25rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           borderBottom: '1px solid var(--border-light)',
+          background: '#ffffff',
+          filter: 'none !important',
+          backdropFilter: 'none !important',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button 

@@ -10,8 +10,20 @@ export class CardController {
     }
 
     try {
+      const user = await prisma.user.findUnique({
+        where: { id: usuarioId as string },
+        select: { familyId: true }
+      });
+
+      if (!user) {
+        res.status(404).json({ error: 'Usuário não encontrado' });
+        return;
+      }
+
       const cards = await prisma.card.findMany({
-        where: { usuarioId: usuarioId as string }
+        where: user.familyId 
+          ? { user: { familyId: user.familyId } }
+          : { usuarioId: usuarioId as string }
       });
       res.status(200).json(cards);
     } catch (err) {
@@ -28,6 +40,12 @@ export class CardController {
     }
 
     try {
+      const userExists = await prisma.user.findUnique({ where: { id: usuarioId as string } });
+      if (!userExists) {
+        res.status(401).json({ error: 'Sessão expirada. Por favor, faça logout e login novamente.' });
+        return;
+      }
+
       const card = await prisma.card.create({
         data: { 
           nome, 

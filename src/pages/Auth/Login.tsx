@@ -1,18 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useFinanceStore } from '../../store/financeStore';
 import { ApiService } from '../../services/apiService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Mail, Lock, User, ArrowRight, Sparkles, BarChart3, Shield, Zap } from 'lucide-react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 export const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [nome, setNome] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
   const { setUser } = useFinanceStore();
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      setInviteCode(code.toUpperCase());
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +35,7 @@ export const Login = () => {
         const data = await ApiService.login(email, senha);
         setUser(data.user);
       } else {
-        const data = await ApiService.register(nome, email, senha);
+        const data = await ApiService.register(nome, email, senha, inviteCode);
         setUser(data.user);
       }
     } catch (err: unknown) {
@@ -41,155 +52,148 @@ export const Login = () => {
     { icon: Zap, text: 'Controle rápido e intuitivo' },
   ];
 
+  const isMobile = useIsMobile();
+
   return (
     <div style={{
       minHeight: '100vh',
       display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      background: isMobile ? 'linear-gradient(135deg, #f8faff 0%, #f0f0ff 100%)' : 'transparent'
     }}>
-      {/* Left Panel - Gradient Branding (proper 50%) */}
+      {/* Left Panel - Branding */}
       <div style={{
-        width: '50%',
+        width: isMobile ? '100%' : '50%',
+        minHeight: isMobile ? '160px' : '100vh',
         background: 'linear-gradient(160deg, #4f46e5 0%, #7c3aed 40%, #a855f7 100%)',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        padding: '4rem 3.5rem',
+        justifyContent: isMobile ? 'center' : 'center',
+        padding: isMobile ? '1.5rem 2rem' : '4rem 3.5rem',
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Decorative shapes */}
+        {/* Decorative shapes - only show desktop ones on desktop or keep subtle on mobile */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {/* Large circle top-right */}
           <div style={{
-            position: 'absolute', top: '-80px', right: '-60px',
-            width: '320px', height: '320px', borderRadius: '50%',
+            position: 'absolute', top: isMobile ? '-40px' : '-80px', right: isMobile ? '-30px' : '-60px',
+            width: isMobile ? '160px' : '320px', height: isMobile ? '160px' : '320px', borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.08)',
           }} />
-          {/* Medium circle bottom-left */}
           <div style={{
             position: 'absolute', bottom: '-40px', left: '-40px',
             width: '240px', height: '240px', borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.06)',
           }} />
-          {/* Small circles scattered */}
-          <div style={{
-            position: 'absolute', top: '20%', right: '25%',
-            width: '80px', height: '80px', borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.05)',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: '30%', left: '15%',
-            width: '60px', height: '60px', borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.04)',
-          }} />
-          {/* Topographic line patterns */}
-          <svg style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '40%', opacity: 0.06 }} viewBox="0 0 500 200" preserveAspectRatio="none">
-            <path d="M0 100 Q125 50 250 100 T500 100" fill="none" stroke="white" strokeWidth="1.5"/>
-            <path d="M0 120 Q125 70 250 120 T500 120" fill="none" stroke="white" strokeWidth="1.5"/>
-            <path d="M0 140 Q125 90 250 140 T500 140" fill="none" stroke="white" strokeWidth="1.5"/>
-            <path d="M0 160 Q125 110 250 160 T500 160" fill="none" stroke="white" strokeWidth="1.5"/>
-          </svg>
         </div>
 
         {/* Content */}
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '420px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.4rem 0.875rem',
-            background: 'rgba(255, 255, 255, 0.15)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'white',
-            marginBottom: '2.5rem',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}>
-            <Sparkles size={13} />
-            Controle financeiro inteligente
-          </div>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: isMobile ? '100%' : '420px', textAlign: isMobile ? 'center' : 'left' }}>
+          {!isMobile && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem 0.875rem',
+              background: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: 'white',
+              marginBottom: '2.5rem',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}>
+              <Sparkles size={13} />
+              Controle financeiro inteligente
+            </div>
+          )}
 
           <h1 style={{
-            fontSize: '2.75rem',
+            fontSize: isMobile ? '1.75rem' : '2.75rem',
             fontWeight: 800,
             lineHeight: 1.1,
             letterSpacing: '-0.035em',
-            marginBottom: '1rem',
+            marginBottom: isMobile ? '0.5rem' : '1rem',
             color: 'white',
           }}>
             FamilyFlow
           </h1>
           <p style={{
-            fontSize: '1.0625rem',
-            lineHeight: 1.7,
+            fontSize: isMobile ? '0.875rem' : '1.0625rem',
+            lineHeight: 1.6,
             color: 'rgba(255, 255, 255, 0.8)',
             fontWeight: 400,
-            marginBottom: '2.5rem',
+            marginBottom: isMobile ? '0' : '2.5rem',
           }}>
-            Entenda para onde seu dinheiro vai. Gerencie gastos familiares, organize
-            categorias e tome decisões mais inteligentes.
+            {isMobile 
+              ? 'Controle as finanças da sua casa juntos.' 
+              : 'Entenda para onde seu dinheiro vai. Gerencie gastos familiares, organize categorias e tome decisões mais inteligentes.'}
           </p>
 
-          {/* Feature list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {features.map((feat, i) => {
-              const Icon = feat.icon;
-              return (
-                <div key={i} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  fontSize: '0.9375rem',
-                  fontWeight: 500,
-                }}>
-                  <div style={{
-                    width: '36px', height: '36px',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    <Icon size={18} />
-                  </div>
-                  {feat.text}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Stats row */}
-          <div style={{
-            display: 'flex',
-            gap: '2.5rem',
-            marginTop: '3rem',
-            paddingTop: '2rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
-          }}>
-            {[
-              { value: '100%', label: 'Gratuito' },
-              { value: 'Família', label: 'Multiusuário' },
-              { value: 'Tempo real', label: 'Dashboards' },
-            ].map((stat, i) => (
-              <div key={i}>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>{stat.label}</div>
+          {!isMobile && (
+            <>
+              {/* Feature list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {features.map((feat, i) => {
+                  const Icon = feat.icon;
+                  return (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '0.9375rem',
+                      fontWeight: 500,
+                    }}>
+                      <div style={{
+                        width: '36px', height: '36px',
+                        borderRadius: 'var(--radius-md)',
+                        background: 'rgba(255, 255, 255, 0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <Icon size={18} />
+                      </div>
+                      {feat.text}
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+
+              {/* Stats row */}
+              <div style={{
+                display: 'flex',
+                gap: '2.5rem',
+                marginTop: '3rem',
+                paddingTop: '2rem',
+                borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+              }}>
+                {[
+                  { value: '100%', label: 'Gratuito' },
+                  { value: 'Família', label: 'Multiusuário' },
+                  { value: 'Tempo real', label: 'Dashboards' },
+                ].map((stat, i) => (
+                  <div key={i}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Right Panel - Form (proper 50%) */}
+      {/* Right Panel - Form */}
       <div style={{
-        width: '50%',
-        background: 'linear-gradient(145deg, #f8faff 0%, #f0f0ff 50%, #f5f3ff 100%)',
+        width: isMobile ? '100%' : '50%',
+        flex: 1,
+        background: 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '3rem',
+        padding: isMobile ? '2rem 1.5rem 4rem' : '3rem',
         position: 'relative',
         overflow: 'hidden',
       }}>
@@ -269,6 +273,16 @@ export const Login = () => {
                 onChange={(e) => setNome(e.target.value)}
                 icon={<User size={16} />}
                 required
+              />
+            )}
+
+            {!isLogin && (
+              <Input
+                label="Código da Família (Opcional)"
+                placeholder="Ex: A1B2C3D4"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                icon={<Sparkles size={16} />}
               />
             )}
             <Input
