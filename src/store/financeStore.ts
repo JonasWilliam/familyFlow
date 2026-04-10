@@ -118,18 +118,16 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       }
 
       const { end: currentCycleEnd } = get().getCycleRange();
-      let startMonthOffset = 0;
-      if (maturityDate > currentCycleEnd) {
-        startMonthOffset = 1;
-      }
-
       if (tx.parcelasTotais && tx.parcelasTotais > 1) {
         const promises = [];
         const valorParcela = tx.valor / tx.parcelasTotais;
 
         for (let i = 0; i < tx.parcelasTotais; i++) {
           const installmentDate = new Date(purchaseDate);
-          installmentDate.setMonth(purchaseDate.getMonth() + i + startMonthOffset);
+          
+          // Sempre respeita a data da compra original. As parcelas seguintes (2, 3...) incrementam o mês.
+          installmentDate.setMonth(purchaseDate.getMonth() + i);
+          
           const dateStr = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}-${String(installmentDate.getDate()).padStart(2, '0')}`;
 
           promises.push(ApiService.createTransaction({
@@ -144,20 +142,12 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         await Promise.all(promises);
         await loadTransactions();
       } else {
-        const installmentDate = new Date(purchaseDate);
-        if (startMonthOffset > 0) {
-          installmentDate.setMonth(purchaseDate.getMonth() + startMonthOffset);
-        }
-        const dateStr = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}-${String(installmentDate.getDate()).padStart(2, '0')}`;
-        
-        await ApiService.createTransaction({ 
-          ...tx, 
-          data: dateStr,
-          usuarioId: user.id 
-        });
+        // Lançamento único no cartão, mantém a data de compra original
+        await ApiService.createTransaction({ ...tx, usuarioId: user.id });
         await loadTransactions();
       }
     } else {
+      // Dinheiro/Receita, mantém a data original
       await ApiService.createTransaction({ ...tx, usuarioId: user.id });
       await loadTransactions();
     }
