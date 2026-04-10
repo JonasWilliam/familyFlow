@@ -151,6 +151,7 @@ export const Dashboard = () => {
       // Lógica de Fechamento: Se o dia da compra >= dia do fechamento do cartão,
       // ele NÃO pertence a esta fatura atual (mês vigente), e sim à próxima.
       if (card && card.fechamento) {
+        // Validação de fatura removida do cadastro pois agora é calculada dinamicamente no Dashboard
         const purchaseDate = new Date(t.data + 'T12:00:00');
         const purchaseDay = purchaseDate.getDate();
         
@@ -529,7 +530,7 @@ export const Dashboard = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--slate-900)' }}>{txPage + 1}</span>
                     <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--slate-400)' }}>/</span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--slate-400)' }}>{Math.ceil(sortedCycleTxs.length / txItemsPerPage)}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--slate-400)' }}>{Math.ceil(recentTransactions.length / txItemsPerPage)}</span>
                   </div>
                   <button 
                     disabled={!hasNextPage}

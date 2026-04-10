@@ -112,12 +112,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         }
       }
 
-      const maturityDate = new Date(invoiceYear, invoiceMonth, card?.vencimento || 1, 12, 0, 0);
-      if (maturityDate < purchaseDate) {
-        maturityDate.setMonth(maturityDate.getMonth() + 1);
-      }
-
-      const { end: currentCycleEnd } = get().getCycleRange();
+      // A lógica de vencimento de fatura agora é processada dinamicamente no Dashboard, 
+      // removendo a necessidade de cálculos prévios no cadastro.
       if (tx.parcelasTotais && tx.parcelasTotais > 1) {
         const promises = [];
         const valorParcela = tx.valor / tx.parcelasTotais;
