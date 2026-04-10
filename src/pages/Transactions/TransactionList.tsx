@@ -156,7 +156,7 @@ export const TransactionList = () => {
       membroId, 
       tipo,
       metodoPagamento,
-      cartaoId: metodoPagamento === 'cartao' ? cartaoId : null,
+      cartaoId: (metodoPagamento === 'cartao' && cartaoId) ? cartaoId : undefined,
       parcelasTotais: metodoPagamento === 'cartao' ? Number(parcelasTotais) : 1
     };
 

@@ -8,8 +8,9 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: 'Erro desconhecido' }));
-    throw new Error(error.error ?? 'Erro na requisição');
+    const errorBody = await res.json().catch(() => ({ error: 'Erro desconhecido' }));
+    const errorMessage = errorBody.details ? `${errorBody.error}: ${errorBody.details}` : (errorBody.error ?? 'Erro na requisição');
+    throw new Error(errorMessage);
   }
   return res.json();
 }
