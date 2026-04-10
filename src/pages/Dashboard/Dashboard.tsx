@@ -35,9 +35,10 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(false);
 
   // Form states
+  const today = new Date().toLocaleDateString('en-CA');
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
-  const [data, setData] = useState(new Date().toISOString().split('T')[0]);
+  const [data, setData] = useState(today);
   const [categoriaId, setCategoriaId] = useState('');
   const [membroId, setMembroId] = useState('');
   const [tipo, setTipo] = useState<'gasto' | 'receita'>('gasto');
@@ -48,7 +49,7 @@ export const Dashboard = () => {
   const resetForm = () => {
     setDescricao('');
     setValor('');
-    setData(new Date().toISOString().split('T')[0]);
+    setData(new Date().toLocaleDateString('en-CA'));
     // Auto seleção inteligente
     const defaultCategory = categories.find(c => c.tipo === 'gasto' && c.nome.toLowerCase().includes('outros')) || categories.find(c => c.tipo === 'gasto');
     setCategoriaId(defaultCategory ? defaultCategory.id : '');
@@ -226,36 +227,36 @@ export const Dashboard = () => {
           flexDirection: 'column',
           boxShadow: '0 10px 30px rgba(37, 99, 235, 0.2)'
         }}>
-          <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+          <div style={{ padding: '1.15rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div>
-                <h2 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Olá, {firstName}! ✨</h2>
-                <p style={{ opacity: 0.8, fontSize: '0.7rem', fontWeight: 700 }}>Ciclo: {start.toLocaleDateString('pt-BR')} — {end.toLocaleDateString('pt-BR')}</p>
+                <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Olá, {firstName}! ✨</h2>
+                <p style={{ opacity: 0.8, fontSize: '0.65rem', fontWeight: 700 }}>Ciclo: {start.toLocaleDateString('pt-BR')} — {end.toLocaleDateString('pt-BR')}</p>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: '0.5rem', borderRadius: '12px' }}>
-                <Wallet size={20} />
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: '0.4rem', borderRadius: '10px' }}>
+                <Wallet size={18} />
               </div>
             </div>
 
-            <div style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <p style={{ fontSize: '0.625rem', fontWeight: 900, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.05rem' }}>Dinheiro em Caixa</p>
+            <div style={{ marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 900, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.05rem' }}>Dinheiro em Caixa</p>
               <div title="Total de receitas menos despesas e investimentos. É o que você tem disponível para gastar agora." style={{ cursor: 'help', opacity: 0.6 }}><PieChart size={10} /></div>
             </div>
-            <h3 style={{ fontSize: '2rem', fontWeight: 900, color: 'white', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+            <h3 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'white', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
               R$ {saldoDisponivelReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
           </div>
 
           <div style={{ 
             background: 'rgba(0,0,0,0.2)', 
-            padding: '1rem 1.5rem', 
+            padding: '0.75rem 1.15rem', 
             display: 'flex', 
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
             <div>
               <p style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.6)', fontWeight: 800, textTransform: 'uppercase' }}>Resultado do Mês</p>
-              <p style={{ fontSize: '1.125rem', fontWeight: 900, color: resultadoCiclo >= 0 ? '#4ade80' : '#f87171' }}>
+              <p style={{ fontSize: '1rem', fontWeight: 900, color: resultadoCiclo >= 0 ? '#4ade80' : '#f87171' }}>
                 R$ {resultadoCiclo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
@@ -274,7 +275,7 @@ export const Dashboard = () => {
         </Card>
 
         {/* HERO 2: Wealth Distribution */}
-        <Card className="glass" padding="1.5rem" style={{ 
+        <Card className="glass" padding="1.15rem" style={{ 
           background: 'white',
           border: '1px solid var(--brand-100)',
           display: 'flex',
@@ -283,19 +284,19 @@ export const Dashboard = () => {
           boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
         }}>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div>
-                <p style={{ fontSize: '0.625rem', fontWeight: 950, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>Patrimônio Líquido</p>
-                <h3 style={{ fontSize: '2rem', fontWeight: 950, color: 'var(--brand-900)', letterSpacing: '-0.04em' }}>
+                <p style={{ fontSize: '0.6rem', fontWeight: 950, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.15rem' }}>Patrimônio Líquido</p>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: 950, color: 'var(--brand-900)', letterSpacing: '-0.04em' }}>
                   R$ {patrimonioLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </h3>
               </div>
-              <div style={{ background: 'var(--success-50)', padding: '0.5rem', borderRadius: '12px', color: 'var(--success-600)' }}>
-                <TrendingUp size={22} />
+              <div style={{ background: 'var(--success-50)', padding: '0.4rem', borderRadius: '10px', color: 'var(--success-600)' }}>
+                <TrendingUp size={20} />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.15rem', marginTop: '0.75rem' }}>
               <div>
                 <p style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Investido</p>
                 <p style={{ fontSize: '0.9375rem', fontWeight: 900, color: 'var(--brand-600)' }}>R$ {totalPatrimonio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>

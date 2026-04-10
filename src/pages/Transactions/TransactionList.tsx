@@ -29,9 +29,10 @@ export const TransactionList = () => {
   const [error, setError] = useState('');
 
   // Estados de Formulário
+  const today = new Date().toLocaleDateString('en-CA');
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
-  const [data, setData] = useState(new Date().toISOString().split('T')[0]);
+  const [data, setData] = useState(today);
   const [categoriaId, setCategoriaId] = useState('');
   const [membroId, setMembroId] = useState('');
   const [tipo, setTipo] = useState<'gasto' | 'receita'>('gasto');
@@ -127,7 +128,7 @@ export const TransactionList = () => {
   const resetForm = () => {
     setDescricao('');
     setValor('');
-    setData(new Date().toISOString().split('T')[0]);
+    setData(new Date().toLocaleDateString('en-CA'));
     // Auto seleção inteligente
     const defaultCategory = categories.find(c => c.tipo === 'gasto' && c.nome.toLowerCase().includes('outros')) || categories.find(c => c.tipo === 'gasto');
     setCategoriaId(defaultCategory ? defaultCategory.id : '');
