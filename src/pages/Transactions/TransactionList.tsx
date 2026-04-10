@@ -90,11 +90,19 @@ export const TransactionList = () => {
       );
     }
 
-    // Ordenação Dinâmica
+    // Ordenação Dinâmica: Prioriza Data e usa createdAt como desempate para sequência exata
     return result.sort((a, b) => {
       const dateA = new Date(a.data + 'T12:00:00').getTime();
       const dateB = new Date(b.data + 'T12:00:00').getTime();
-      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+      
+      if (dateA !== dateB) {
+        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+      }
+
+      // Se for o mesmo dia, usa o horário de inserção (createdAt)
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
   }, [transactions, filterPeriod, searchTerm, getCycleRange, categories, sortOrder]);
 
@@ -104,6 +112,17 @@ export const TransactionList = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Auto-seleção resiliente: Se os dados carregarem depois do modal abrir, preenchemos
+  useEffect(() => {
+    if (modalOpen && !editingId) {
+      if (!membroId && members.length > 0) setMembroId(members[0].id);
+      if (!categoriaId && categories.length > 0) {
+        const defaultCat = categories.find(c => c.tipo === tipo && c.nome.toLowerCase().includes('outros')) || categories.find(c => c.tipo === tipo);
+        if (defaultCat) setCategoriaId(defaultCat.id);
+      }
+    }
+  }, [modalOpen, editingId, members, categories, tipo, membroId, categoriaId]);
 
   const resetForm = () => {
     setDescricao('');

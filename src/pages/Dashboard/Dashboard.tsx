@@ -177,7 +177,15 @@ export const Dashboard = () => {
   // PAGINAÇÃO ÚLTIMOS LANÇAMENTOS
   const txItemsPerPage = 5;
   const sortedCycleTxs = useMemo(() => 
-    [...cycleTransactions].sort((a, b) => new Date(b.data + 'T12:00:00').getTime() - new Date(a.data + 'T12:00:00').getTime())
+    [...cycleTransactions].sort((a, b) => {
+      const dateA = new Date(a.data + 'T12:00:00').getTime();
+      const dateB = new Date(b.data + 'T12:00:00').getTime();
+      if (dateA !== dateB) return dateB - dateA;
+      
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return timeB - timeA;
+    })
   , [cycleTransactions]);
 
   const paginatedTxs = sortedCycleTxs.slice(txPage * txItemsPerPage, (txPage + 1) * txItemsPerPage);

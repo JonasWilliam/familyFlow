@@ -37,12 +37,20 @@ export class TransactionController {
           cartaoId: cartaoId || null,
           parcelaAtual: parcelaAtual || 1,
           parcelasTotais: parcelasTotais || 1
+        },
+        include: {
+          category: true,
+          member: true
         }
       });
       res.status(201).json({ transaction });
-    } catch (err) {
+    } catch (err: any) {
       console.error('DB Insert Error:', err);
-      res.status(500).json({ error: 'Erro ao salvar o lançamento' });
+      res.status(500).json({ 
+        error: 'Erro ao salvar o lançamento',
+        details: err.message,
+        code: err.code 
+      });
     }
   }
 
@@ -70,7 +78,10 @@ export class TransactionController {
         where: user.familyId 
           ? { user: { familyId: user.familyId } }
           : { usuarioId: usuarioId as string },
-        orderBy: { data: 'desc' },
+        orderBy: [
+          { data: 'desc' },
+          { createdAt: 'desc' }
+        ],
         include: { 
           category: true,
           member: true

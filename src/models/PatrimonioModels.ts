@@ -43,6 +43,9 @@ export interface Transaction {
   cartaoId?: string;
   parcelaAtual?: number;
   parcelasTotais?: number;
+  createdAt: string; // ISO String from DB
+  category?: { nome: string; tipo: string };
+  member?: { nome: string };
 }
 
 // Extensão de Transaction para views detalhadas com join

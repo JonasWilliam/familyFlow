@@ -150,16 +150,16 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         }
         const dateStr = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}-${String(installmentDate.getDate()).padStart(2, '0')}`;
         
-        const newTx = await ApiService.createTransaction({ 
+        await ApiService.createTransaction({ 
           ...tx, 
           data: dateStr,
           usuarioId: user.id 
         });
-        set(state => ({ transactions: [...state.transactions, newTx] }));
+        await loadTransactions();
       }
     } else {
-      const newTx = await ApiService.createTransaction({ ...tx, usuarioId: user.id });
-      set(state => ({ transactions: [...state.transactions, newTx] }));
+      await ApiService.createTransaction({ ...tx, usuarioId: user.id });
+      await loadTransactions();
     }
   },
 
