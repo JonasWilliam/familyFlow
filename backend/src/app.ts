@@ -27,6 +27,24 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Endpoint EXCLUSIVO de desenvolvimento para resetar o banco de dados remoto
+import { prisma } from './lib/prisma.js';
+app.get('/api/system/reset-dangerously', async (req, res) => {
+  try {
+    await prisma.transaction.deleteMany();
+    await prisma.member.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.card.deleteMany();
+    await prisma.investment.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.family.deleteMany();
+    
+    res.json({ message: 'BANCO DE DADOS RESETADO COM SUCESSO! Você já pode criar uma nova conta e recadastrar tudo do Zero.' });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Erro ao resetar banco', details: error.message });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/members', memberRoutes);
