@@ -27,6 +27,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+import { seedCategories } from './lib/seed.js';
+
+app.get('/api/system/seed', async (req, res) => {
+  try {
+    await seedCategories();
+    res.json({ message: 'CATEGORIAS PADRÃO RESTAURADAS COM SUCESSO! ✅' });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Erro ao dar a carga de categorias', details: error.message });
+  }
+});
+
 // Endpoint EXCLUSIVO de desenvolvimento para resetar o banco de dados remoto
 import { prisma } from './lib/prisma.js';
 app.get('/api/system/reset-dangerously', async (req, res) => {
